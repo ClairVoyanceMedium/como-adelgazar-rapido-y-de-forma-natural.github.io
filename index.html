@@ -2209,7 +2209,231 @@ if (!("speechSynthesis" in window)) voiceToggle.style.display = "none";
      </script nonce="xai-ultra2025">
 
 <!-- Scripts JavaScript -->
-    <script nonce="xai-ultra2025">
-        // Gestión del año dinámico
-        const currentYear = new Date().getFullYear();
-        document.querySelectorAll('#header-year, #header-title-year, #hero-year, #urgency-year, #minceur-urgency-year, #programme-urgency-year, #spiritual-urgency-year, #footer-year').forEach(el => el.textContent = currentYear);
+<script nonce="xai-ultra2025">
+    // Gestión del año dinámico
+    const currentYear = new Date().getFullYear();
+    document.querySelectorAll('#header-year, #header-title-year, #hero-year, #urgency-year, #minceur-urgency-year, #programme-urgency-year, #spiritual-urgency-year, #footer-year').forEach(el => el.textContent = currentYear);
+
+    // Gestión del pop-up anti-abandono (todos los dispositivos, cada visita, 12s inicial, reaparece cada 90s)
+    const youtubePopup = document.getElementById('youtubePopup');
+    const closePopup = document.getElementById('closePopup');
+
+    function showPopup() {
+        setTimeout(() => {
+            // Ocultar el pop-up anti-abandono para evitar conflictos
+            document.querySelector('.exit-intent-popup')?.classList.remove('active');
+            youtubePopup.classList.add('active');
+            youtubePopup.setAttribute('aria-hidden', 'false');
+            document.getElementById('youtube-popup-heading').focus();
+        }, 12000);
+    }
+
+    closePopup.addEventListener('click', () => {
+        youtubePopup.classList.remove('active');
+        youtubePopup.setAttribute('aria-hidden', 'true');
+        // Mostrar el pop-up nuevamente después de 90 segundos
+        setTimeout(showPopup, 140000);
+    });
+
+    // Cierre con tecla Escape
+    youtubePopup.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            youtubePopup.classList.remove('active');
+            youtubePopup.setAttribute('aria-hidden', 'true');
+            setTimeout(showPopup, 140000);
+        }
+    });
+
+    window.addEventListener('load', showPopup);
+
+    // Gestión del carrusel
+    const carousels = document.querySelectorAll('.carousel');
+    carousels.forEach(carousel => {
+        const inner = carousel.querySelector('.carousel-inner');
+        const items = carousel.querySelectorAll('.carousel-item');
+        const prevBtn = carousel.querySelector('.carousel-prev');
+        const nextBtn = carousel.querySelector('.carousel-next');
+        let currentIndex = 0;
+
+        function updateCarousel() {
+            items.forEach((item, index) => {
+                item.classList.toggle('active', index === currentIndex);
+                item.setAttribute('aria-hidden', index !== currentIndex);
+            });
+            prevBtn.disabled = currentIndex === 0;
+            nextBtn.disabled = currentIndex === items.length - 1;
+        }
+
+        prevBtn.addEventListener('click', () => {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateCarousel();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentIndex < items.length - 1) {
+                currentIndex++;
+                updateCarousel();
+            }
+        });
+
+        updateCarousel();
+    });
+
+    // Gestión de botones "Leer más"
+    const readMoreButtons = document.querySelectorAll('.read-more-btn');
+    readMoreButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const content = btn.nextElementSibling;
+            content.style.display = content.style.display === 'block' ? 'none' : 'block';
+            btn.textContent = content.style.display === 'block' ? 'Reducir' : 'Leer más';
+        });
+    });
+
+    // Gestión del calculador IMC
+    const imcForm = document.getElementById('imc-form');
+    const heightInput = document.getElementById('height');
+    const weightInput = document.getElementById('weight');
+    const imcRecommendation = document.getElementById('imc-recommendation');
+    const imcChart = document.getElementById('imc-chart').getContext('2d');
+    let chartInstance = null;
+
+    function validateInput(input, min, max, errorElement) {
+        const value = parseFloat(input.value);
+        if (isNaN(value) || value < min || value > max) {
+            errorElement.style.display = 'block';
+            return false;
+        }
+        errorElement.style.display = 'none';
+        return true;
+    }
+
+    imcForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const heightValid = validateInput(heightInput, 100, 250, document.getElementById('height-error'));
+        const weightValid = validateInput(weightInput, 30, 300, document.getElementById('weight-error'));
+
+        if (heightValid && weightValid) {
+            const height = parseFloat(heightInput.value) / 100;
+            const weight = parseFloat(weightInput.value);
+            const imc = (weight / (height * height)).toFixed(1);
+
+            let category, recommendation, posology;
+            if (imc < 18.5) {
+                category = 'Insuficiencia ponderal';
+                recommendation = 'Su IMC indica insuficiencia ponderal. Consulte a un profesional para un plan adaptado.';
+                posology = '';
+            } else if (imc < 25) {
+                category = 'Peso normal';
+                recommendation = 'Su IMC es ideal. Mantenga su peso con una alimentación equilibrada asociada a 4 cápsulas de Victory minceur para los días de "placer". 2 por la mañana/tarde.';
+                posology = '';
+            } else if (imc < 30) {
+                category = 'Sobrepeso';
+                recommendation = 'Tiene sobrepeso. Pruebe las <a href="#minceur">cápsulas Victory</a> para una pérdida de peso natural y rápida.';
+                posology = 'Posología: 2 cápsulas Victory por día (mañana/mediodía/tarde) con un vaso de agua. Es decir 6 por día, durante 3 meses para recuperar un cuerpo perfectamente esbelto.';
+            } else {
+                category = 'Obesidad';
+                recommendation = 'Su IMC indica obesidad. El <a href="#programme-personnalise">programa personalizado Victory</a> es ideal para usted asociado a las cápsulas minceur Victory';
+                posology = 'Posología: 2 cápsulas Victory por día en cada comida, combinadas con el programa personalizado Victory. Es decir 6 cápsulas por día, durante 4 meses para recuperar su peso ideal.';
+            }
+
+            imcRecommendation.innerHTML = `
+                <p>Su IMC: <strong>${imc}</strong> (${category})</p>
+                <p>${recommendation}</p>
+                <p>${posology}</p>
+            `;
+
+            if (chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(imcChart, {
+                type: 'bar',
+                data: {
+                    labels: ['Su IMC', 'IMC Normal'],
+                    datasets: [{
+                        label: 'IMC',
+                        data: [imc, 22],
+                        backgroundColor: ['#FF69B4', '#87CEEB'],
+                        borderColor: ['#fff', '#fff'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: { beginAtZero: true, max: 40 },
+                        x: { ticks: { color: '#fff' } }
+                    },
+                    plugins: { legend: { labels: { color: '#fff' } } }
+                }
+            });
+        }
+    });
+
+    // Gestión de botones de audio
+    const audioButtons = document.querySelectorAll('.audio-button');
+    let currentUtterance = null;
+
+    audioButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const textIds = button.dataset.textId.split(',');
+            const texts = textIds.map(id => {
+                const elements = document.querySelectorAll(`#${id},.${id},[id*="${id}"]`);
+                return Array.from(elements).map(el => el.textContent.trim()).join(' ');
+            }).join(' ');
+
+            if (button.classList.contains('play-button')) {
+                if (currentUtterance) {
+                    speechSynthesis.cancel();
+                }
+                currentUtterance = new SpeechSynthesisUtterance(texts);
+                currentUtterance.lang = 'fr-FR';
+                currentUtterance.rate = 1;
+                currentUtterance.pitch = 1;
+                speechSynthesis.speak(currentUtterance);
+
+                button.style.display = 'none';
+                button.nextElementSibling.style.display = 'inline-flex';
+                button.nextElementSibling.classList.add('playing');
+            } else {
+                speechSynthesis.cancel();
+                button.style.display = 'none';
+                button.previousElementSibling.style.display = 'inline-flex';
+                button.classList.remove('playing');
+            }
+        });
+    });
+
+    // Gestión del botón silenciar para el video
+    const muteToggle = document.querySelector('.mute-toggle');
+    const videoIframe = document.querySelector('.video-container iframe');
+    muteToggle.addEventListener('click', () => {
+        const isMuted = muteToggle.textContent.includes('Activar');
+        muteToggle.textContent = isMuted ? 'Desactivar sonido' : 'Activar sonido';
+        videoIframe.contentWindow.postMessage(JSON.stringify({
+            event: 'command',
+            func: isMuted ? 'unMute' : 'mute'
+        }), '*');
+    });
+
+    // Gestión de la traducción de Google
+    function googleTranslateElementInit() {
+        new google.translate.TranslateElement({
+            pageLanguage: 'fr',
+            includedLanguages: 'af,ar,bg,bn,bs,cs,da,de,el,en,es,et,eu,fa,fi,fr,ga,gl,he,hi,hr,hu,hy,id,is,it,ja,ka,km,ko,lo,lt,lv,mk,ml,ms,mt,my,nl,no,pl,pt,ro,ru,sk,sl,sr,sv,sw,ta,te,th,tl,tr,uk,ur,vi,zh-CN,zh-TW,zu',
+            layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+            autoDisplay: false
+        }, 'google_translate_element');
+    }
+
+    // Gestión de errores de video
+    videoIframe.addEventListener('error', () => {
+        document.getElementById('video-error').style.display = 'block';
+    });
+
+    // Web Vitals
+    webVitals.getCLS((metric) => console.log('CLS:', metric.value));
+    webVitals.getFID((metric) => console.log('FID:', metric.value));
+    webVitals.getLCP((metric) => console.log('LCP:', metric.value));
+</script>
+</body>
+</html>
+        
