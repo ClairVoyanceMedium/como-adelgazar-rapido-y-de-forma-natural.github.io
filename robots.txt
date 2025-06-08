@@ -1,42 +1,90 @@
-# Indique aux robots que toutes les pages peuvent être explorées, sauf restrictions spécifiées
+# === DIRECTIVAS GENERALES ===
 User-agent: *
-Disallow: /admin/
-Disallow: /tmp/
-Disallow: /private/
+Allow: /
+Allow: /[a-z]{2}/  # Páginas multilingües (/es/, /en/, /fr/, etc.)
+Allow: /terms/     # Términos y condiciones
+Allow: /fonts/     # Fuentes web
+Allow: /images/    # Imágenes
+Allow: /js/        # JavaScript
+Allow: /css/       # Estilos CSS
+Allow: /*.webp$    # Imágenes WebP
+Allow: /*.jpg$     # Imágenes JPG
+Allow: /*.png$     # Imágenes PNG
+Allow: /*.gif$     # Imágenes GIF
+Allow: /*.js$      # Archivos JS
+Allow: /*.css$     # Archivos CSS
+Disallow: /csp-report-endpoint/  # Seguridad
+Disallow: /contact/             # Contacto
+Disallow: /privacy/             # Privacidad
+Disallow: /checkout/            # Procesos de pago
+Disallow: /search/              # Búsquedas
+Disallow: /api/                 # APIs
+Disallow: /test/                # Pruebas
+Disallow: /staging/             # Entornos de prueba
+Clean-param: utm_source&utm_medium&utm_campaign&lang&session_id
 
-# Bloquer des URL avec paramètres inutiles pour l'indexation
-Disallow: /*?debug=true
-Disallow: /*?preview=true
+# === MOTORES DE BÚSQUEDA PRINCIPALES ===
+User-agent: Googlebot
+User-agent: Bingbot
+User-agent: Yandex
+Crawl-delay: 2
+Allow: /blog/
+Allow: /article/
+Clean-param: utm_source&utm_medium&utm_campaign&lang
+Disallow: /csp-report-endpoint/
+Disallow: /contact/
+Disallow: /privacy/
+Disallow: /checkout/
 
-# Permettre les fichiers nécessaires au bon affichage et fonctionnement
-Allow: /css/
-Allow: /js/
+# === RASTREADORES DE IMÁGENES ===
+User-agent: Googlebot-Image
+Allow: /images/
+Allow: /*.webp$
+Allow: /*.jpg$
+Allow: /*.png$
+Allow: /*.gif$
+Disallow: /favicon_optimized.webp
+
+# === IA Y ASISTENTES VOCALES ===
+User-agent: ChatGPT-User
+User-agent: GPTBot
+User-agent: ClaudeBot
+User-agent: GeminiBot
+Crawl-delay: 3
+Allow: /blog/
+Allow: /article/
+Allow: /images/
+Clean-param: utm_source&utm_medium&utm_campaign&lang
+Disallow: /checkout/
+
+# === REDES SOCIALES ===
+User-agent: FacebookBot
+User-agent: Twitterbot
+User-agent: TikTokBot
+Crawl-delay: 2
+Allow: /blog/
+Allow: /article/
 Allow: /images/
 
-# Référencement des ressources multimédias
-Allow: *.png
-Allow: *.jpg
-Allow: *.webp
-Allow: *.css
-Allow: *.js
-
-# Fournir le chemin du fichier sitemap pour une meilleure indexation
-Sitemap: https://www.clairvoyancemedium.com/sitemap.xml
-
-# Autorisation pour les robots Google et Bing pour maximiser les campagnes publicitaires
-User-agent: Googlebot
-Allow: /
-User-agent: AdsBot-Google
-Allow: /
-User-agent: Bingbot
-Allow: /
-
-# Bloquer les robots nuisibles ou non désirés
-User-agent: BadBot
-Disallow: /
-User-agent: EvilScraper
+# === BLOQUEO DE RASTREADORES NO DESEADOS ===
+User-agent: MJ12bot
+User-agent: AhrefsBot
+User-agent: DotBot
 Disallow: /
 
-# Empêcher l'exploration des fichiers sensibles
-Disallow: /config/
-Disallow: /backup/
+# === HERRAMIENTAS SEO (SOLO SEMRUSH) ===
+User-agent: SemrushBot
+Crawl-delay: 5
+Allow: /blog/
+Allow: /article/
+
+# === PROTECCIÓN FINAL ===
+User-agent: *
+Disallow: /  # Bloqueo por defecto
+
+# === CONFIGURACIÓN DE RASTREO ===
+Crawl-delay: 1
+Request-rate: 1/4  # 1 solicitud cada 4 segundos
+
+# === MAPA DEL SITIO ===
+Sitemap: https://clairvoyancemedium.github.io/como-adelgazar-rapido-y-de-forma-natural.github.io/sitemap-index.xml
